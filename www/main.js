@@ -1,0 +1,1 @@
+const depthSocket = new WebSocket(`ws://${window.location.host}`, 'depth');

@@ -1,11 +1,27 @@
 const depth = require('nuimotion/depth');
 const Canvas = require('canvas');
+const WebSocketServer = require('websocket').server;
 const express = require('express');
 const app = express();
 
-const FOREGROUND = 1500;
-const LIGHTEST = 150;
-const DARKEST = 10;
+const PORT = 3000;
+const STREAM_RATE = 3; // per second
+const FOREGROUND = 1500; // millimeters
+const LIGHTEST = 150; // 0-255
+const DARKEST = 10; // 0-255
+const WS_LOGGER = log.bind(null, 'ws');
+const SERVER_LOGGER = log.bind(null, 'server');
+
+const connections = [];
+var depthStream = null;
+
+function formatDate(date) {
+  return date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + date.getDate() + ' ' + date.getHours() + ':' + date.getMinutes() + ':' + date.getSeconds();
+}
+
+function log(namespace, category, message) {
+  console[category]('[' + formatDate(new Date()) + '] [' + namespace.toUpperCase() + '] ' + message);
+}
 
 function getDepthData(buffer) {
   var i, j, depth, minDepth = FOREGROUND, maxDepth = 0;
@@ -80,20 +96,87 @@ function getNormalizedDepth(depth, min, max) {
   return (zeroedMax - zeroedDepth) / zeroedMax;
 }
 
+function onGetRequest(sendRgb, req, res) {
+  const depthFrame = depth.getDepthFrame();
+  const rgbFrame = sendRgb ? depth.getRGBFrame() : null;
+
+  res.contentType('image/png');
+  getCanvasFromFrame(depthFrame, rgbFrame).pngStream().pipe(res);
+}
+
+function originIsAllowed(origin) {
+  return origin.search(/^http(s)?:\/\/localhost(:\d+)?$/) === 0;
+}
+
+function serializeFrame(frame) {
+  var i, pixels = [], depth;
+  for (i = 0; i < frame.depths.length; i++) {
+    depth = frame.depths[i];
+    if (depth === 0) {
+      continue;
+    }
+    pixels.push(i + ':' + getColour(getNormalizedDepth(depth, frame.minDepth, frame.maxDepth)));
+  }
+  return pixels.join(',');
+}
+
+function onWebsocketRequest(request) {
+  if (!originIsAllowed(request.origin)) {
+    // Make sure we only accept requests from an allowed origin
+    request.reject();
+    WS_LOGGER('info', 'Connection from origin ' + request.origin + ' rejected.');
+    return;
+  }
+
+  const connection = request.accept('depth', request.origin);
+  connection.on('close', function(reasonCode, description) {
+    connections.splice(connections.indexOf(connection), 1);
+    if (connections.length === 0) {
+      // Shut down the depth stream
+      clearInterval(depthStream);
+      depthStream = null;
+    }
+    WS_LOGGER('info', 'Peer ' + connection.remoteAddress + ' disconnected. ' + connections.length + ' open connections.');
+  });
+  connections.push(connection);
+
+  if (!depthStream) {
+    // Start up the depth stream
+    depthStream = setInterval(function() {
+      const frame = getDepthData(depth.getDepthFrame().data);
+      connections.forEach(function(conn) {
+        conn.sendUTF(serializeFrame(frame));
+      });
+    }, 1000 / Math.floor(STREAM_RATE));
+  }
+  WS_LOGGER('info', 'Connection from origin ' + request.origin + ' accepted. ' + connections.length + ' open connections.');
+}
+
 /*
- * Start all the shit
+ * Start nuimotion
  */
 
 depth.init();
 
-app.get('/', function(req, res) {
-  const depthFrame = depth.getDepthFrame();
-  const rgbFrame = depth.getRGBFrame();
+/*
+ * Start Express
+ */
 
-  res.contentType('image/png');
-  getCanvasFromFrame(depthFrame, rgbFrame).pngStream().pipe(res);
+app.get('/depth.png', onGetRequest.bind(null, false));
+app.get('/rgb.png', onGetRequest.bind(null, true));
+app.use(express.static('www'));
+
+const server = app.listen(PORT, function() {
+  SERVER_LOGGER('info', 'Listening on port ' + PORT);
 });
 
-app.listen(3000, function() {
-  console.log('Example app listening on port 3000!');
+/*
+ * Start the websocket server
+ */
+
+const wsServer = new WebSocketServer({
+  httpServer: server,
+  autoAcceptConnections: false
 });
+
+wsServer.on('request', onWebsocketRequest);
