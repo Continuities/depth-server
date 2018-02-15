@@ -9,6 +9,7 @@ const STREAM_RATE = 3; // per second
 const FOREGROUND = 1500; // millimeters
 const LIGHTEST = 150; // 0-255
 const DARKEST = 10; // 0-255
+const SCALING_FACTOR = 16; // Must be a power of two
 const WS_LOGGER = log.bind(null, 'ws');
 const SERVER_LOGGER = log.bind(null, 'server');
 
@@ -108,6 +109,42 @@ function originIsAllowed(origin) {
   return origin.search(/^http(s)?:\/\/localhost(:\d+)?$/) === 0;
 }
 
+function getLedFrame(frame) {
+  const data = getDepthData(frame.data);
+  const ledWidth = frame.width / SCALING_FACTOR;
+  const ledHeight = frame.height / SCALING_FACTOR;
+  const leds = new Array(ledWidth * ledHeight);
+
+  var i;
+  for (i = 0; i < leds.length; i++) {
+    leds[i] = calculateAverage(data, frame.width, frame.height, i);
+  }
+
+  return leds;
+}
+
+function calculateAverage(depthData, frameWidth, frameHeight, ledIndex) {
+  const ledWidth = frameWidth / SCALING_FACTOR;
+  const ledX = ledIndex % ledWidth;
+  const ledY = Math.floor(ledIndex / ledWidth);
+  const bufferX = ledX * SCALING_FACTOR;
+  const bufferY = ledY * SCALING_FACTOR;
+  var x, y, depthIndex, acc = 0, numPixels = 0;
+  for (x = bufferX; x < bufferX + SCALING_FACTOR && x < frameWidth; x++) {
+    for (y = bufferY; y < bufferY + SCALING_FACTOR && y < frameHeight; y++) {
+      depthIndex = x + (y * frameWidth);
+      if (depthData.depths[depthIndex] === 0) {
+        continue;
+      }
+      acc += depthData.depths[depthIndex];
+      numPixels++;
+    }
+  }
+
+  return numPixels === 0 ? 0 : acc / numPixels;
+}
+
+
 function serializeFrame(frame) {
   var i, pixels = [], depth;
   for (i = 0; i < frame.depths.length; i++) {
@@ -164,6 +201,10 @@ depth.init();
 
 app.get('/depth.png', onGetRequest.bind(null, false));
 app.get('/rgb.png', onGetRequest.bind(null, true));
+app.get('/ledframe', function(req, res) {
+  const ledData = getLedFrame(depth.getDepthFrame());
+  res.send(JSON.stringify(ledData));
+});
 app.use(express.static('www'));
 
 const server = app.listen(PORT, function() {
