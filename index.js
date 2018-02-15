@@ -5,7 +5,7 @@ const express = require('express');
 const app = express();
 
 const PORT = 3000;
-const STREAM_RATE = 3; // per second
+const STREAM_RATE = 30; // per second
 const FOREGROUND = 1500; // millimeters
 const LIGHTEST = 150; // 0-255
 const DARKEST = 10; // 0-255
@@ -144,17 +144,8 @@ function calculateAverage(depthData, frameWidth, frameHeight, ledIndex) {
   return numPixels === 0 ? 0 : acc / numPixels;
 }
 
-
 function serializeFrame(frame) {
-  var i, pixels = [], depth;
-  for (i = 0; i < frame.depths.length; i++) {
-    depth = frame.depths[i];
-    if (depth === 0) {
-      continue;
-    }
-    pixels.push(i + ':' + getColour(getNormalizedDepth(depth, frame.minDepth, frame.maxDepth)));
-  }
-  return pixels.join(',');
+  return JSON.stringify(getLedFrame(frame));
 }
 
 function onWebsocketRequest(request) {
@@ -180,9 +171,9 @@ function onWebsocketRequest(request) {
   if (!depthStream) {
     // Start up the depth stream
     depthStream = setInterval(function() {
-      const frame = getDepthData(depth.getDepthFrame().data);
+      const frame = serializeFrame(depth.getDepthFrame());
       connections.forEach(function(conn) {
-        conn.sendUTF(serializeFrame(frame));
+        conn.sendUTF(frame);
       });
     }, 1000 / Math.floor(STREAM_RATE));
   }
