@@ -117,7 +117,7 @@ function getLedFrame(frame) {
 
   var i;
   for (i = 0; i < leds.length; i++) {
-    leds[i] = calculateAverage(data, frame.width, frame.height, i);
+    leds[i] = Math.round(calculateAverage(data, frame.width, frame.height, i) * 255);
   }
 
   return leds;
@@ -136,7 +136,7 @@ function calculateAverage(depthData, frameWidth, frameHeight, ledIndex) {
       if (depthData.depths[depthIndex] === 0) {
         continue;
       }
-      acc += depthData.depths[depthIndex];
+      acc += getNormalizedDepth(depthData.depths[depthIndex], depthData.minDepth, depthData.maxDepth);
       numPixels++;
     }
   }
@@ -199,11 +199,30 @@ depth.init();
  * Start Express
  */
 
-app.get('/depth.png', onGetRequest.bind(null, false));
-app.get('/rgb.png', onGetRequest.bind(null, true));
-app.get('/ledframe', function(req, res) {
+function fakeData() {
+  const NUM_LEDS = 1200;
+  const d = [];
+  var i;
+  for (i = 0; i < NUM_LEDS; i++) {
+    d.push(Math.round((i / NUM_LEDS) * 255));
+  }
+  return d;
+}
+
+function nocache(req, res, next) {
+  res.header('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+  res.header('Expires', '-1');
+  res.header('Pragma', 'no-cache');
+  next();
+}
+
+app.get('/depth.png', nocache, onGetRequest.bind(null, false));
+app.get('/rgb.png', nocache, onGetRequest.bind(null, true));
+app.get('/ledframe', nocache, function(req, res) {
   const ledData = getLedFrame(depth.getDepthFrame());
-  res.send(JSON.stringify(ledData));
+  //const ledData = fakeData();
+
+  res.status(200).json(ledData);
 });
 app.use(express.static('www'));
 
