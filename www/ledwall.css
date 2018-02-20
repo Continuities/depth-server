@@ -2,6 +2,7 @@ html, body {
   height: 100%;
   margin: 0;
   padding: 0;
+  background: black;
 }
 
 body {
@@ -19,7 +20,8 @@ body {
 .led {
   background: black;
   border-radius: 50%;
-  min-width: 2.5%;
+  min-width: 0.5%;
+  margin: 1%;
 }
 
 .led:before {
