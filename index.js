@@ -4,9 +4,10 @@ const WebSocketServer = require('websocket').server;
 const express = require('express');
 const app = express();
 
+const FAKE_DATA = false;
 const PORT = 3000;
 const STREAM_RATE = 30; // per second
-const FOREGROUND = 1500; // millimeters
+const FOREGROUND = 1700; // millimeters
 const LIGHTEST = 150; // 0-255
 const DARKEST = 10; // 0-255
 const SCALING_FACTOR = 16; // Must be a power of two
@@ -144,10 +145,6 @@ function calculateAverage(depthData, frameWidth, frameHeight, ledIndex) {
   return numPixels === 0 ? 0 : acc / numPixels;
 }
 
-function serializeFrame(frame) {
-  return JSON.stringify(getLedFrame(frame));
-}
-
 function onWebsocketRequest(request) {
   if (!originIsAllowed(request.origin)) {
     // Make sure we only accept requests from an allowed origin
@@ -171,7 +168,8 @@ function onWebsocketRequest(request) {
   if (!depthStream) {
     // Start up the depth stream
     depthStream = setInterval(function() {
-      const frame = serializeFrame(depth.getDepthFrame());
+      const ledData = FAKE_DATA ? fakeData() : getLedFrame(depth.getDepthFrame());
+      const frame = JSON.stringify(ledData);
       connections.forEach(function(conn) {
         conn.sendUTF(frame);
       });
@@ -184,7 +182,7 @@ function onWebsocketRequest(request) {
  * Start nuimotion
  */
 
-depth.init();
+!FAKE_DATA && depth.init();
 
 /*
  * Start Express
@@ -210,9 +208,7 @@ function nocache(req, res, next) {
 app.get('/depth.png', nocache, onGetRequest.bind(null, false));
 app.get('/rgb.png', nocache, onGetRequest.bind(null, true));
 app.get('/ledframe', nocache, function(req, res) {
-  const ledData = getLedFrame(depth.getDepthFrame());
-  //const ledData = fakeData();
-
+  const ledData = FAKE_DATA ? fakeData() : getLedFrame(depth.getDepthFrame());
   res.status(200).json(ledData);
 });
 app.use(express.static('www'));
