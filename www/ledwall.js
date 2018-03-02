@@ -14,7 +14,7 @@ const $elements = Symbol('elements');
 const FRAME_RATE = 30; // per second
 const ANIM_RATE = 0.01; // Higher is faster
 const FADE_RATE = 5; // Higher is slower
-const PROCESSORS = [bgProcessors.circle];
+const PROCESSORS = [];
 
 
 function getColours(width, height, background, depths) {
