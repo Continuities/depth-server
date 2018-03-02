@@ -20,8 +20,9 @@ body {
 .led {
   background: black;
   border-radius: 50%;
-  min-width: 0.5%;
-  margin: 1%;
+  min-width: 1.5%;
+  margin: 0.5%;
+  /*min-width: 2.5%;*/
 }
 
 .led:before {

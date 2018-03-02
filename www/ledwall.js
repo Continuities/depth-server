@@ -1,26 +1,42 @@
 import { rgbToHsl, hslToRgb } from './colour.js';
-import * as patterns from './patterns.js';
+import { wrap } from './util.js';
+import * as fgProcessors from './processors/foreground.js';
+import * as bgProcessors from './processors/background.js';
 
 const $width = Symbol('width');
 const $height = Symbol('height');
 const $colours = Symbol('colours');
 const $parent = Symbol('parent');
-const $baseColour = Symbol('baseColour');
+const $background = Symbol('background');
 const $depths = Symbol('depths');
+const $elements = Symbol('elements');
 
 const FRAME_RATE = 30; // per second
 const ANIM_RATE = 0.01; // Higher is faster
 const FADE_RATE = 5; // Higher is slower
-const PATTERN = patterns.circle;
+const PROCESSORS = [bgProcessors.circle];
 
-function wrap(input, max) {
-  if (input > max) {
-    return input % max;
+
+function getColours(width, height, background, depths) {
+  // The base colour is the background offset by the depth
+  const base = depths.map(depth => {
+    return [
+      wrap(background[0] - (depth / 255), 1),
+      background[1],
+      background[2]
+    ];
+  });
+
+  // Apply all post-processors
+  return PROCESSORS.reduce((current, processor) => processor(width, height, current), base);
+}
+
+function makeList(length, fillFunc) {
+  const list = new Array(length);
+  for (let i = 0; i < length; i++) {
+    list[i] = fillFunc(i);
   }
-  if (input < 0) {
-    return input + max;
-  }
-  return input;
+  return list;
 }
 
 export default class {
@@ -29,16 +45,28 @@ export default class {
     this[$width] = width;
     this[$height] = height;
     this[$parent] = parentElement;
-    this[$baseColour] = [ 0, 1, 0.5 ]; // hsl
+    this[$background] = [ 0, 1, 0.5 ]; // hsl
 
     setInterval(() => {
-      this[$baseColour][0] = wrap(this[$baseColour][0] + ANIM_RATE, 1);
+      this[$background][0] = wrap(this[$background][0] + ANIM_RATE, 1);
     }, Math.round(1000 / FRAME_RATE));
 
-    const colours = this[$colours] = new Array(width * height);
-    colours.fill(this[$baseColour]);
-    const depths = this[$depths] = new Array(width * height);
-    depths.fill(0);
+    const listSize = width * height;
+    this[$colours] = makeList(listSize, () => this[$background]);
+    this[$depths] = makeList(listSize, () => 0);
+
+    this[$elements] = makeList(listSize, () => {
+      const el = document.createElement('div');
+      el.className = 'led';
+      return el;
+    });
+
+    const container = this[$elements].reduce((c, div) => {
+      c.appendChild(div);
+      return c;
+    }, document.createElement('div'));
+    container.className = 'led-container';
+    parentElement.appendChild(container);
 
     this.render();
   }
@@ -49,13 +77,7 @@ export default class {
    * @param {number} depth the offset [0, 255]
    */
   setDepth(i, depth) {
-    const base = this[$baseColour];
     const depths = this[$depths];
-
-    //if (depth === 0 && DECAY > 0 && this[$depths][i] > 0) {
-    //  // decay the depth
-    //  depth = Math.max(0, this[$depths][i] - DECAY);
-    //}
 
     if (FADE_RATE > 0) {
       const delta = Math.abs(Math.round((depth - depths[i]) / FADE_RATE));
@@ -70,34 +92,15 @@ export default class {
     else {
       depths[i] = depth;
     }
-
-    // TODO: Probably shouldn't set colour in this function
-    const width = this[$width], height = this[$height];
-    const rX = Math.abs((i % width) - (width / 2)) / (width / 2);
-    const rY = Math.abs((i / width) - (height / 2)) / (height / 2);
-
-    this[$colours][i] = [
-        wrap(base[0] - PATTERN(rX, rY) + (depths[i] / 255), 1),
-        base[1],
-        base[2]
-    ];
-
   }
 
   render() {
-    const container = this[$colours].map(([h, s, l]) => {
-      const [ r, g, b ] = hslToRgb(h, s, l);
-      const el = document.createElement('div');
-      el.className = 'led';
-      el.style.backgroundColor = `rgb(${r},${g},${b})`;
-      return el;
-    }).reduce((c, ledElement) => {
-      c.appendChild(ledElement);
-      return c;
-    }, document.createElement('div'));
 
-    container.className = 'led-container';
-    this[$parent].innerHTML = '';
-    this[$parent].appendChild(container);
+    const els = this[$elements];
+    getColours(this[$width], this[$height], this[$background], this[$depths])
+        .forEach(([h, s, l], i) => {
+      const [ r, g, b ] = hslToRgb(h, s, l);
+      els[i].style.backgroundColor = `rgb(${r},${g},${b})`;
+    });
   }
 }

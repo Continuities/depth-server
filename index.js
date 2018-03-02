@@ -4,7 +4,7 @@ const WebSocketServer = require('websocket').server;
 const express = require('express');
 const app = express();
 
-const FAKE_DATA = false;
+const FAKE_DATA = true;
 const PORT = 3000;
 const STREAM_RATE = 30; // per second
 const FOREGROUND = 1700; // millimeters
@@ -193,7 +193,8 @@ function fakeData() {
   const d = [];
   var i;
   for (i = 0; i < NUM_LEDS; i++) {
-    d.push(Math.round((i / NUM_LEDS) * 255));
+    //d.push(Math.round((i / NUM_LEDS) * 255));
+    d.push(0);
   }
   return d;
 }
