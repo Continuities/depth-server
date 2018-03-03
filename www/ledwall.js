@@ -18,17 +18,18 @@ const PROCESSORS = [];
 
 
 function getColours(width, height, background, depths) {
+
+  // Apply all processors to the depth-map
+  const processedDepths = PROCESSORS.reduce((current, processor) => processor(width, height, current), depths);
+
   // The base colour is the background offset by the depth
-  const base = depths.map(depth => {
+  return processedDepths.map(depth => {
     return [
       wrap(background[0] - (depth / 255), 1),
       background[1],
       background[2]
     ];
   });
-
-  // Apply all post-processors
-  return PROCESSORS.reduce((current, processor) => processor(width, height, current), base);
 }
 
 function makeList(length, fillFunc) {
