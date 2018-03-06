@@ -1,12 +1,12 @@
 import { wrap, coordsToIndex } from '../util.js';
 
-const DECAY = -16;
+const DECAY = 4;
 
 function smear(input, output, index, fill) {
   if (input[index] > 0) {
     // There's depth here, so set the fill value
     output[index] = 0;
-    return wrap(input[index] - DECAY, 255);
+    return wrap(input[index] + 128, 255);
   }
   else if (fill !== null) {
     // There's no depth here, so fill and decay

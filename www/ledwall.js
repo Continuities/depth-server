@@ -81,8 +81,7 @@ export default class {
     const depths = this[$depths];
 
     if (FADE_RATE > 0) {
-      const delta = Math.abs(Math.round((depth - depths[i]) / FADE_RATE));
-      //const delta = 30;
+      const delta = Math.ceil(Math.abs((depth - depths[i]) / FADE_RATE));
       if (depth > depths[i]) {
         depths[i] = Math.min(depth, depths[i] + delta);
       }
