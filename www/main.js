@@ -1,4 +1,5 @@
 import LedWall from './ledwall.js';
+import HtmlRenderer from './renderers/html.js';
 
 const WIDTH = 40;
 const HEIGHT = 30;
@@ -6,7 +7,11 @@ const HEIGHT = 30;
 const ledWall = new LedWall({
   width: WIDTH,
   height: HEIGHT,
-  parentElement: document.body
+  renderer: new HtmlRenderer({
+    parentElement: document.body,
+    width: WIDTH,
+    height: HEIGHT
+  })
 });
 
 requestAnimationFrame(function renderFrame() {

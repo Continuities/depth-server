@@ -1,3 +1,5 @@
+import { log } from './src/util.js';
+
 const depth = require('./depth-provider');
 const WebSocketServer = require('websocket').server;
 const express = require('express');
@@ -10,14 +12,6 @@ const SERVER_LOGGER = log.bind(null, 'server');
 
 const connections = [];
 var depthStream = null;
-
-function formatDate(date) {
-  return date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + date.getDate() + ' ' + date.getHours() + ':' + date.getMinutes() + ':' + date.getSeconds();
-}
-
-function log(namespace, category, message) {
-  console[category]('[' + formatDate(new Date()) + '] [' + namespace.toUpperCase() + '] ' + message);
-}
 
 function onGetRequest(sendRgb, req, res) {
   res.contentType('image/png');
@@ -76,7 +70,9 @@ app.get('/rgb.png', nocache, onGetRequest.bind(null, true));
 app.get('/ledframe', nocache, function(req, res) {
   res.status(200).json(depth.getDepthFrame());
 });
+
 app.use(express.static('www'));
+app.use(express.static('src'));
 
 const server = app.listen(PORT, function() {
   SERVER_LOGGER('info', 'Listening on port ' + PORT);

@@ -1,21 +1,19 @@
 import { rgbToHsl, hslToRgb } from './colour.js';
-import { wrap } from './util.js';
+import { makeList, wrap } from './util.js';
 import * as fgProcessors from './processors/foreground.js';
 import * as bgProcessors from './processors/background.js';
 
 const $width = Symbol('width');
 const $height = Symbol('height');
 const $colours = Symbol('colours');
-const $parent = Symbol('parent');
 const $background = Symbol('background');
 const $depths = Symbol('depths');
-const $elements = Symbol('elements');
+const $renderer = Symbol('renderer');
 
 const FRAME_RATE = 30; // per second
 const ANIM_RATE = 0.01; // Higher is faster
 const FADE_RATE = 5; // Higher is slower
 const PROCESSORS = [];
-
 
 function getColours(width, height, background, depths) {
 
@@ -32,20 +30,13 @@ function getColours(width, height, background, depths) {
   });
 }
 
-function makeList(length, fillFunc) {
-  const list = new Array(length);
-  for (let i = 0; i < length; i++) {
-    list[i] = fillFunc(i);
-  }
-  return list;
-}
-
 export default class {
 
-  constructor({ width, height, parentElement }) {
+  constructor({ width, height, renderer }) {
+
+    this[$renderer] = renderer;
     this[$width] = width;
     this[$height] = height;
-    this[$parent] = parentElement;
     this[$background] = [ 0, 1, 0.5 ]; // hsl
 
     setInterval(() => {
@@ -55,19 +46,6 @@ export default class {
     const listSize = width * height;
     this[$colours] = makeList(listSize, () => this[$background]);
     this[$depths] = makeList(listSize, () => 0);
-
-    this[$elements] = makeList(listSize, () => {
-      const el = document.createElement('div');
-      el.className = 'led';
-      return el;
-    });
-
-    const container = this[$elements].reduce((c, div) => {
-      c.appendChild(div);
-      return c;
-    }, document.createElement('div'));
-    container.className = 'led-container';
-    parentElement.appendChild(container);
 
     this.render();
   }
@@ -95,12 +73,6 @@ export default class {
   }
 
   render() {
-
-    const els = this[$elements];
-    getColours(this[$width], this[$height], this[$background], this[$depths])
-        .forEach(([h, s, l], i) => {
-      const [ r, g, b ] = hslToRgb(h, s, l);
-      els[i].style.backgroundColor = `rgb(${r},${g},${b})`;
-    });
+    this[$renderer].render(getColours(this[$width], this[$height], this[$background], this[$depths]).map(hsl => hslToRgb(...hsl)));
   }
 }
