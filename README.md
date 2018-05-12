@@ -3,6 +3,9 @@
 1. NodeJS 0.10.24
 2. OpenNI 2.2
 3. NiTE 2.2
+4. Python 2.7.2
+
+Note: Old node requires old node-gyp requires old Python. Recommend using pyenv to run python 2.7.2.
 
 ## Installation
 _Mostly stolen from https://blog.gordonturner.com/2014/02/22/kinect-openni-nite-and-nuimotion-setup-for-osx/_
