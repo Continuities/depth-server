@@ -22,3 +22,9 @@ _Mostly stolen from https://blog.gordonturner.com/2014/02/22/kinect-openni-nite-
 10. Add OPENNI2 and NITE2 environment variables, pointing to the install dirs
 11. Make sure you're using Node 0.10.24 (nvm is your friend!). It will fail in newer versions.
 12. Finally, run `npm install` 
+
+### It's different on the Pi!
+1. Install libfreenect as described https://github.com/OpenKinect/libfreenect
+2. Install OpenNI as described here https://gist.github.com/chatchavan/990d3c0a5b085dc7bae1
+3. `sudo apt-get install libcairo2-dev libjpeg-dev libgif-dev`
+4. `npm install`???
