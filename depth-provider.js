@@ -1,13 +1,18 @@
 const depth = require('nuimotion/depth');
 const Canvas = require('canvas');
 
-const FAKE_DATA = true;
+const FAKE_DATA = false;
 const STREAM_RATE = 30; // per second
 const FOREGROUND = 1700; // millimeters
 const LIGHTEST = 150; // 0-255
 const DARKEST = 10; // 0-255
 const SCALING_FACTOR = 16; // Must be a power of two
 
+/**
+ * Returns depth data for each pixel formatted as a flat list
+ * Order is left -> right, top -> bottom.
+ * @param {*} buffer
+ */
 function getDepthData(buffer) {
   var i, j, depth, minDepth = FOREGROUND, maxDepth = 0;
   const depths = new Uint16Array(Math.ceil(buffer.length / 2));
@@ -37,7 +42,8 @@ function fakeData() {
   const d = [];
   var i;
   for (i = 0; i < NUM_LEDS; i++) {
-      d.push(Math.round((i / NUM_LEDS) * 255));
+      // d.push(Math.round((i / NUM_LEDS) * 255));
+      d.push(0);
   }
   return d;
 }

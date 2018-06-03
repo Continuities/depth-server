@@ -31,3 +31,7 @@ function formatDate(date) {
 export function log(namespace, category, message) {
   console[category]('[' + formatDate(new Date()) + '] [' + namespace.toUpperCase() + '] ' + message);
 }
+
+export function flatten(listOfLists) {
+  return listOfLists.reduce((ret, l) => ret.concat(l));
+}
