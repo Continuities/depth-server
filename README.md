@@ -10,6 +10,8 @@ Note: Old node requires old node-gyp requires old Python. Recommend using pyenv 
 ## Installation
 _Mostly stolen from https://blog.gordonturner.com/2014/02/22/kinect-openni-nite-and-nuimotion-setup-for-osx/_
 
+These instructions are out of date. You no longer need OpenNI or NiTE.
+
 1. `brew install libfreenect`
 2. Download latest OpenNI and NiTE from http://download.dahoo.fr/Ressources/openNi/
 3. Extract OpenNI, run sudo ./install.sh
