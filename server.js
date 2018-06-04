@@ -6,7 +6,7 @@ const express = require('express');
 const app = express();
 
 const PORT = 3000;
-const STREAM_RATE = 30; // per second
+const STREAM_RATE = 20; // per second
 const WS_LOGGER = log.bind(null, 'ws');
 const SERVER_LOGGER = log.bind(null, 'server');
 

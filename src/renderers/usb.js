@@ -5,6 +5,7 @@ const usb = require('usb');
 const VID = 5824;
 const PID = 1155;
 const LOGGER = log.bind(null, 'usb');
+const CLR_SIG = [1, 0, 1, 0];
 
 const $width = Symbol('width');
 const $height = Symbol('height');
@@ -33,8 +34,8 @@ export default class {
       LOGGER('error', 'Tried to write to uninitialized USB device!');
       return;
     }
-
-    const data = new Buffer(flatten(colours));
+    // Prepend the clear signal
+    const data = new Buffer(CLR_SIG.concat(flatten(colours)));
     this[$output].transfer(data, function() {
       LOGGER('info', `Sent frame`);
     });

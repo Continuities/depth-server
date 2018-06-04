@@ -10,7 +10,7 @@ const $background = Symbol('background');
 const $depths = Symbol('depths');
 const $renderer = Symbol('renderer');
 
-const FRAME_RATE = 30; // per second
+const FRAME_RATE = 20; // per second
 const ANIM_RATE = 0.01; // Higher is faster
 const FADE_RATE = 5; // Higher is slower
 const PROCESSORS = [];

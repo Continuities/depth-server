@@ -1,9 +1,8 @@
-const depth = require('nuimotion/depth');
+const kinect = require('kinect');
 const Canvas = require('canvas');
 
 const FAKE_DATA = false;
-const STREAM_RATE = 30; // per second
-const FOREGROUND = 1700; // millimeters
+const FOREGROUND = 900;//1700; // millimeters
 const LIGHTEST = 150; // 0-255
 const DARKEST = 10; // 0-255
 const SCALING_FACTOR = 16; // Must be a power of two
@@ -98,9 +97,8 @@ function getNormalizedDepth(depth, min, max) {
 }
 
 function getPngStream(includeRgb) {
-  const depthFrame = depth.getDepthFrame();
-  const rgbFrame = sendRgb ? depth.getRGBFrame() : null;
-  return getCanvasFromFrame(depthFrame, rgbFrame).pngStream();
+  // TODO? Do I care?
+  throw "unsupported";
 }
 
 function getLedFrame(frame) {
@@ -138,16 +136,34 @@ function calculateAverage(depthData, frameWidth, frameHeight, ledIndex) {
   return numPixels === 0 ? 0 : acc / numPixels;
 }
 
+var _latestFrame, _context;
+function initKinect() {
+  _context = kinect();
+  _context.on('depth', function(buf) {
+    _context.pause();
+    _latestFrame = getLedFrame({
+      width: 640,
+      height: 480,
+      data: buf
+    });
+  });
+  _context.start('depth');
+  _context.resume();
+}
+
 /*
- * Start nuimotion
+ * Start Kinect
  */
 
-!FAKE_DATA && depth.init();
+!FAKE_DATA && initKinect();
 
 /*
  * Exports
  */
 exports.getPngStream = getPngStream;
 exports.getDepthFrame = function() {
-  return FAKE_DATA ? fakeData() : getLedFrame(depth.getDepthFrame());
+  var ret = FAKE_DATA ? fakeData() : _latestFrame;
+  _latestFrame = null;
+  _context && _context.resume();
+  return ret;
 };

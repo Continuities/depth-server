@@ -10,7 +10,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "nuimotion": "~0.2.0",
     "express": "~4.16.2",
     "canvas": "~1.6.9",
     "websocket": "~1.0.25",
