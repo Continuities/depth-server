@@ -1,33 +1,33 @@
 import { rgbToHsl, hslToRgb } from './colour.js';
 import { makeList, wrap } from './util.js';
-import * as fgProcessors from './processors/foreground.js';
-import * as bgProcessors from './processors/background.js';
+import * as patterns from './processors/patterns.js';
+import * as effects from './processors/effects.js';
+import * as animations from './processors/animations.js';
 
 const $width = Symbol('width');
 const $height = Symbol('height');
 const $colours = Symbol('colours');
-const $background = Symbol('background');
 const $depths = Symbol('depths');
 const $renderer = Symbol('renderer');
+const $animationPosition = Symbol('animationPosition');
 
 const FRAME_RATE = 20; // per second
 const ANIM_RATE = 0.01; // Higher is faster
 const FADE_RATE = 5; // Higher is slower
-const PROCESSORS = [];
+const PROCESSORS = [animations.cycle];
 
-function getColours(width, height, background, depths) {
+function getColours(width, height, depths, animationPosition) {
 
   // Apply all processors to the depth-map
-  const processedDepths = PROCESSORS.reduce((current, processor) => processor(width, height, current), depths);
+  const processedDepths = PROCESSORS.reduce((current, processor) => 
+    processor(width, height, current, animationPosition), depths);
 
-  // The base colour is the background offset by the depth
-  return processedDepths.map(depth => {
-    return [
-      wrap(background[0] - (depth / 255), 1),
-      background[1],
-      background[2]
-    ];
-  });
+  // Depth affects hue
+  return processedDepths.map(depth => [
+    depth / 255,
+    1,
+    0.5
+  ]);
 }
 
 export default class {
@@ -37,14 +37,14 @@ export default class {
     this[$renderer] = renderer;
     this[$width] = width;
     this[$height] = height;
-    this[$background] = [ 0, 1, 0.5 ]; // hsl
+    this[$animationPosition] = 0;
 
     setInterval(() => {
-      this[$background][0] = wrap(this[$background][0] + ANIM_RATE, 1);
+      this[$animationPosition] = wrap(this[$animationPosition] + ANIM_RATE, 1);
     }, Math.round(1000 / FRAME_RATE));
 
     const listSize = width * height;
-    this[$colours] = makeList(listSize, () => this[$background]);
+    this[$colours] = makeList(listSize, () => [0, 1, 0.5]);
     this[$depths] = makeList(listSize, () => 0);
 
     this.render();
@@ -73,6 +73,9 @@ export default class {
   }
 
   render() {
-    this[$renderer].render(getColours(this[$width], this[$height], this[$background], this[$depths]).map(hsl => hslToRgb(...hsl)));
+    this[$renderer].render(
+      getColours(this[$width], this[$height], this[$depths], this[$animationPosition])
+        .map(hsl => hslToRgb(...hsl))
+    );
   }
 }
