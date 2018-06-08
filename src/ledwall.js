@@ -11,24 +11,18 @@ const $depths = Symbol('depths');
 const $renderer = Symbol('renderer');
 const $animationPosition = Symbol('animationPosition');
 
+const BASE_SATURATION = 1; // percent
+const BASE_LUMINOSITY = 0.5; // percent
+const ATTRACT_LUMINOSITY = 0.4; //percent
+const ATTRACT_THRESHOLD = 0.1; // percent
 const FRAME_RATE = 20; // per second
 const ANIM_RATE = 0.01; // Higher is faster
 const FADE_RATE = 5; // Higher is slower
 const PROCESSORS = [animations.cycle];
 
-function getColours(width, height, depths, animationPosition) {
-
-  // Apply all processors to the depth-map
-  const processedDepths = PROCESSORS.reduce((current, processor) => 
-    processor(width, height, current, animationPosition), depths);
-
-  // Depth affects hue
-  return processedDepths.map(depth => [
-    depth / 255,
-    1,
-    0.5
-  ]);
-}
+const ATTRACT_MODES = [
+  [animations.cycle, patterns.diamond]
+];
 
 export default class {
 
@@ -44,7 +38,7 @@ export default class {
     }, Math.round(1000 / FRAME_RATE));
 
     const listSize = width * height;
-    this[$colours] = makeList(listSize, () => [0, 1, 0.5]);
+    this[$colours] = makeList(listSize, () => [0, BASE_SATURATION, BASE_LUMINOSITY]);
     this[$depths] = makeList(listSize, () => 0);
 
     this.render();
@@ -72,10 +66,30 @@ export default class {
     }
   }
 
+  /**
+   * Renders a frame using the current renderer
+   */
   render() {
-    this[$renderer].render(
-      getColours(this[$width], this[$height], this[$depths], this[$animationPosition])
-        .map(hsl => hslToRgb(...hsl))
-    );
+
+    const percentActive = this[$depths].reduce((depth, percent) => percent + depth / this[$depths].length);
+    const attractMode = percentActive < ATTRACT_THRESHOLD;
+    const processors = attractMode ? ATTRACT_MODES[0] : PROCESSORS;
+
+    // Apply all processors to the depth-map
+    const processedDepths = processors.reduce((current, processor) => processor(
+      this[$width], 
+      this[$height], 
+      current, 
+      this[$animationPosition]
+    ), this[$depths]);
+  
+    // Depth only affects hue
+    const colours = processedDepths.map(depth => [
+      depth / 255,
+      BASE_SATURATION,
+      attractMode ? ATTRACT_LUMINOSITY : BASE_LUMINOSITY
+    ]);
+
+    this[$renderer].render(colours.map(hsl => hslToRgb(...hsl)));
   }
 }
