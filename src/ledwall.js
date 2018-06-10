@@ -20,7 +20,7 @@ const FADE_RATE = 5; // Higher is slower
 const PROCESSORS = [animations.cycle];
 
 const ATTRACT_MODES = [
-  [animations.verticalWave(), animations.horizontalWave()],
+  [animations.angledWave(), animations.verticalWave(), animations.horizontalWave()],
   [animations.cycle()]
 ];
 

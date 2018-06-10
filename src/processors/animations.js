@@ -44,6 +44,16 @@ function horizontalProvider(x, y, width, height) {
   return (x / width) * Math.PI;
 }
 
+function rotationalProvider(rotation) {
+  const cos = Math.cos(rotation);
+  const sin = Math.sin(rotation);
+  return (x, y, width, height) => {
+    const rotatedX = (x * cos) - (y * sin);
+    const rotatedY = (x * sin) + (y * cos);
+    return horizontalProvider(rotatedX, rotatedY, width, height);
+  };
+}
+
 export function cycle() {
   let pos = 0;
   return (width, height, input, deltaT) => {
@@ -54,4 +64,6 @@ export function cycle() {
 }
 
 export const verticalWave = waveFactory(0.5, 0.6, 0, mult(offset(verticalProvider, 1), 1));
-export const horizontalWave = waveFactory(1, 1, 0, mult(horizontalProvider, 2));
+export const horizontalWave = waveFactory(0.5, 1, 0, mult(horizontalProvider, 2));
+export const angledWave = waveFactory(0.5, 0.4, 0.1, mult(offset(rotationalProvider(45), 0), 1));
+
