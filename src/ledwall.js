@@ -9,19 +9,19 @@ const $height = Symbol('height');
 const $colours = Symbol('colours');
 const $depths = Symbol('depths');
 const $renderer = Symbol('renderer');
-const $animationPosition = Symbol('animationPosition');
+const $lastFrame = Symbol('lastFrame');
 
 const BASE_SATURATION = 1; // percent
 const BASE_LUMINOSITY = 0.5; // percent
 const ATTRACT_LUMINOSITY = 0.4; //percent
 const ATTRACT_THRESHOLD = 0.1; // percent
-const FRAME_RATE = 20; // per second
-const ANIM_RATE = 0.01; // Higher is faster
+const ANIM_RATE = 0.0003; // Steps per milli. Higher is faster
 const FADE_RATE = 5; // Higher is slower
 const PROCESSORS = [animations.cycle];
 
 const ATTRACT_MODES = [
-  [animations.cycle, patterns.diamond]
+  [animations.verticalWave(), animations.horizontalWave()],
+  [animations.cycle()]
 ];
 
 export default class {
@@ -31,11 +31,7 @@ export default class {
     this[$renderer] = renderer;
     this[$width] = width;
     this[$height] = height;
-    this[$animationPosition] = 0;
-
-    setInterval(() => {
-      this[$animationPosition] = wrap(this[$animationPosition] + ANIM_RATE, 1);
-    }, Math.round(1000 / FRAME_RATE));
+    this[$lastFrame] = Date.now();
 
     const listSize = width * height;
     this[$colours] = makeList(listSize, () => [0, BASE_SATURATION, BASE_LUMINOSITY]);
@@ -75,12 +71,15 @@ export default class {
     const attractMode = percentActive < ATTRACT_THRESHOLD;
     const processors = attractMode ? ATTRACT_MODES[0] : PROCESSORS;
 
+    const deltaT = (Date.now() - this[$lastFrame]) * ANIM_RATE; 
+    this[$lastFrame] = Date.now();
+
     // Apply all processors to the depth-map
     const processedDepths = processors.reduce((current, processor) => processor(
       this[$width], 
       this[$height], 
       current, 
-      this[$animationPosition]
+      deltaT
     ), this[$depths]);
   
     // Depth only affects hue
