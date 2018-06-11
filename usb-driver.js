@@ -4,7 +4,7 @@ import UsbRenderer from './src/renderers/usb.js';
 
 const usb = require('usb');
 const depth = require('./depth-provider');
-const STREAM_RATE = 20; // per second
+const STREAM_RATE = 30; // per second
 const WIDTH = 40;
 const HEIGHT = 30;
 
