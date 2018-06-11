@@ -82,3 +82,21 @@ export function log(namespace, category, message) {
 export function flatten(listOfLists) {
   return listOfLists.reduce((ret, l) => ret.concat(l));
 }
+
+/**
+ * Applies a series of processors to depth input
+ * @param {function[]} processors Processors to apply
+ * @param {number} width Width of the viewport
+ * @param {number} height Height of the viewport
+ * @param {number[]} input Input depths
+ * @param {number} deltaT Time elapsed since last frame
+ * @returns {number[]} Processed depths
+ */
+export function applyProcessors(processors, width, height, input, deltaT) {
+  return processors.reduce((current, processor) => processor(
+    width, 
+    height, 
+    current, 
+    deltaT
+  ), input);
+}

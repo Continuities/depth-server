@@ -1,4 +1,4 @@
-import { wrap, indexToCoords } from './../util.js';
+import { wrap, indexToCoords } from '../util.js';
 
 function inputToCoords(width, input) {
   return input.map((z, i) => {
@@ -63,7 +63,14 @@ export function cycle() {
   };
 }
 
-export const verticalWave = waveFactory(0.5, 0.6, 0, mult(offset(verticalProvider, 1), 1));
-export const horizontalWave = waveFactory(0.5, 1, 0, mult(horizontalProvider, 2));
-export const angledWave = waveFactory(0.5, 0.4, 0.1, mult(offset(rotationalProvider(45), 0), 1));
+export function randomWave() {
+  const amplitude = (Math.random() * 0.50) + 0.25;
+  const speed = (Math.random() * 0.5) + 0.25;
+  const timeOffset = Math.random() * 0.75;
+  const rotation = Math.random() * Math.PI;
+  const translation = Math.random();
+  const harmonic = Math.random() * 3;
+  return waveFactory(amplitude, speed, timeOffset, mult(offset(rotationalProvider(rotation), translation), harmonic))();
+}
+
 
