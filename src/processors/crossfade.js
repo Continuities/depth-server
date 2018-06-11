@@ -6,7 +6,7 @@ export default function crossfade(fromProcessors, toProcessors, onComplete) {
     position += deltaT;
     if (position >= 1) {
       onComplete();
-      return;
+      return applyProcessors(toProcessors, width, height, input, deltaT);
     }
 
     const fromFrame = applyProcessors(fromProcessors, width, height, input, deltaT);

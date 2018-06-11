@@ -36,8 +36,6 @@ export default class {
     }
     // Prepend the clear signal
     const data = new Buffer(CLR_SIG.concat(flatten(colours)));
-    this[$output].transfer(data, function() {
-      LOGGER('info', `Sent frame`);
-    });
+    this[$output].transfer(data);
   }
 }
