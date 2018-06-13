@@ -100,3 +100,15 @@ export function applyProcessors(processors, width, height, input, deltaT) {
     deltaT
   ), input);
 }
+
+/**
+ * Gets an item from a Map, throwing if it's not there
+ * @param {Map<*>} map The Map to get from
+ * @param {*} key The key of the item to get
+ */
+export function strictGet(map, key) {
+  if (!map.has(key)) {
+    throw `No key ${key} in map ${map}`;
+  }
+  return map.get(key);
+}

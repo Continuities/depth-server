@@ -97,7 +97,10 @@ export default class {
       this[$untilChange] -= deltaT;
       if (this[$untilChange] <= 0) {
         const newMode = makeAttractMode();
-        this[$currentAttract] = crossFade(this[$currentAttract], newMode, () => this[$currentAttract] = newMode);
+        const fader = crossFade(this[$currentAttract], newMode);
+        fader.on('complete', mode => this[$currentAttract] = mode)
+        this[$currentAttract].off && this[$currentAttract].off('complete');
+        this[$currentAttract] = fader;
         this[$untilChange] = CHANGE_EVERY;
       }
     }
