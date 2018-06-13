@@ -39,8 +39,7 @@ function getDepthData(buffer) {
 function fakeData() {
   const NUM_LEDS = 1200;
   const d = [];
-  var i;
-  for (i = 0; i < NUM_LEDS; i++) {
+  for (let i = 0; i < NUM_LEDS; i++) {
       // d.push(Math.round((i / NUM_LEDS) * 255));
       d.push(0);
   }
