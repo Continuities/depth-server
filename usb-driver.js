@@ -1,10 +1,10 @@
-import { log } from './src/util.js';
 import LedWall from './src/ledwall.js';
 import UsbRenderer from './src/renderers/usb.js';
 
-const usb = require('usb');
 const depth = require('./depth-provider');
-const STREAM_RATE = 30; // per second
+const STREAM_RATE = 60; // per second
+const SAMPLE_RATE = 30; // per second
+const PASSIVE_SAMPLE_RATE = 2; // per second
 const WIDTH = 40;
 const HEIGHT = 30;
 
@@ -19,12 +19,17 @@ const ledWall = new LedWall({
   renderer
 });
 
+let _lastSample = Date.now();
 (function doFrame() {
   setTimeout(doFrame, 1000 / STREAM_RATE);
-  const frame = depth.getDepthFrame();
-  if (!frame) { return; }
-  frame.forEach((value, index) => {
-    ledWall.setDepth(index, value);
-  });
+
+  const sampleRate = ledWall.isInteractive() ? SAMPLE_RATE : PASSIVE_SAMPLE_RATE;
+  if (Date.now() - _lastSample >= 1000 / sampleRate) {
+    _lastSample = Date.now();
+    const frame = depth.getDepthFrame();
+    frame && frame.forEach((value, index) => 
+        ledWall.setDepth(index, value));
+  }
+
   ledWall.render();
 })();

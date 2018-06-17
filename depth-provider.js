@@ -1,10 +1,7 @@
 const kinect = require('kinect');
-const Canvas = require('canvas');
 
 const FAKE_DATA = false;
-const FOREGROUND = 900;//1700; // millimeters
-const LIGHTEST = 150; // 0-255
-const DARKEST = 10; // 0-255
+const FOREGROUND = 800;//1700; // millimeters
 const SCALING_FACTOR = 16; // Must be a power of two
 
 /**
@@ -44,49 +41,6 @@ function fakeData() {
       d.push(0);
   }
   return d;
-}
-
-function getCanvasFromFrame(frame, rgbFrame) {
-  const width = frame.width, height = frame.height;
-  const canvas = new Canvas(rgbFrame ? width * 2 : width, height);
-  const context = canvas.getContext('2d');
-  const data = getDepthData(frame.data);
-  var i, x, y, depth, colour;
-
-  // Draw the depth frame
-  for (i = 0; i < data.depths.length; i += 2) {
-    x = i % width;
-    y = Math.floor(i / width);
-    depth = data.depths[i];
-    if (depth > 0) {
-      colour = getColour(getNormalizedDepth(depth, data.minDepth, data.maxDepth));
-      context.fillStyle = 'rgba(' + colour + ',' + colour + ',' + colour + ', 1)';
-      context.beginPath();
-      context.arc(x, y, 1, 0, 2 * Math.PI, true);
-      context.fill();
-    }
-  }
-
-  // Draw the RGB frame, if it's there
-  if (rgbFrame) {
-    for (i = 0; i < rgbFrame.data.length - 2; i += 3) {
-      x = ((i / 3) % width) + width;
-      y = Math.floor((i / 3) / width);
-      context.fillStyle = 'rgba(' +
-          rgbFrame.data.readUInt8(i) + ',' +
-          rgbFrame.data.readUInt8(i + 1) + ',' +
-          rgbFrame.data.readUInt8(i + 2) + ', 1)';
-      context.beginPath();
-      context.arc(x, y, 1, 0, 2 * Math.PI, true);
-      context.fill();
-    }
-  }
-
-  return canvas;
-}
-
-function getColour(normalizedDepth) {
-  return DARKEST + Math.floor(normalizedDepth * (LIGHTEST - DARKEST));
 }
 
 function getNormalizedDepth(depth, min, max) {

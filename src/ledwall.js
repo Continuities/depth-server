@@ -82,7 +82,7 @@ export default class {
   }
 
   isInteractive() {
-    return this[$currentMode] === INTERACTIVE_MODE;
+    return this[$isInteractive];
   }
 
   /**
