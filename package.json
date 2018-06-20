@@ -5,7 +5,10 @@
   "main": "server.js",
   "scripts": {
     "server": "babel-node server.js",
-    "usb-driver": "babel-node usb-driver.js"
+    "usb-driver": "babel-node usb-driver.js",
+    "prod": "forever start -c node_modules/.bin/babel-node usb-driver.js",
+    "stop": "forever stop usb-driver.js",
+    "logs": "forever logs usb-driver.js"
   },
   "author": "",
   "license": "ISC",
@@ -15,7 +18,8 @@
     "babel-cli": "~6.26.0",
     "babel-preset-es2015": "~6.24.1",
     "usb": "~1.3.1",
-    "kinect": "~0.3.0"
+    "kinect": "~0.3.0",
+    "forever": "~0.15.3"
   },
   "babel": {
     "presets": [
