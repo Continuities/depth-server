@@ -1,6 +1,6 @@
 const kinect = require('kinect');
 
-const FAKE_DATA = true;
+const FAKE_DATA = false;
 const FOREGROUND = 800;//1700; // millimeters
 const SCALING_FACTOR = 16; // Must be a power of two
 
