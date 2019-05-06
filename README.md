@@ -30,3 +30,16 @@ These instructions are out of date. You no longer need OpenNI or NiTE.
 2. Install OpenNI as described here https://gist.github.com/chatchavan/990d3c0a5b085dc7bae1
 3. `sudo apt-get install libcairo2-dev libjpeg-dev libgif-dev`
 4. `npm install`???
+
+### Modern instructions for the NUC
+1. Install Ubuntu
+2. Install nvm: `curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.34.0/install.sh | bash`
+3. `nvm install 0.10.24`
+4. `npm config set strict-ssl false`
+5. `git clone https://github.com/Continuities/depth-server.git`
+6. `cd depth-server`
+7. `sudo apt-get install python make build-essential libudev-dev`
+8. Annoying things to make node-kinect build:
+    a. `sudo mkdir /usr/include/libfreenect && sudo cp /usr/include/libfreenect.h /usr/include/libfreenect`
+    b. Change `libfreenect.a` in `node-kinect/binding.gyp` to `/usr/lib/x86_64-linux-gnu/libfreenect.so`
+9. `npm install`
