@@ -43,3 +43,6 @@ These instructions are out of date. You no longer need OpenNI or NiTE.
     a. `sudo mkdir /usr/include/libfreenect && sudo cp /usr/include/libfreenect.h /usr/include/libfreenect`
     b. Change `libfreenect.a` in `node-kinect/binding.gyp` to `/usr/lib/x86_64-linux-gnu/libfreenect.so`
 9. `npm install`
+10. Get fwfetcher from `https://raw.githubusercontent.com/OpenKinect/libfreenect/master/src/fwfetcher.py` and run it
+11. Run `freenect-micview` to upload the firmware
+12. `npm run server` to test
