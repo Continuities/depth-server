@@ -46,3 +46,6 @@ These instructions are out of date. You no longer need OpenNI or NiTE.
 10. Get fwfetcher from `https://raw.githubusercontent.com/OpenKinect/libfreenect/master/src/fwfetcher.py` and run it
 11. Run `freenect-micview` to upload the firmware
 12. `npm run server` to test
+13. Install old PM2 `npm install pm2@1 -g`
+14. `pm2 start run.sh --name lightmirror`
+15. So it starts on reboot: `pm2 save` then `pm2 startup`
