@@ -33,19 +33,20 @@ These instructions are out of date. You no longer need OpenNI or NiTE.
 
 ### Modern instructions for the NUC
 1. Install Ubuntu
-2. Install nvm: `curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.34.0/install.sh | bash`
-3. `nvm install 0.10.24`
-4. `npm config set strict-ssl false`
-5. `git clone https://github.com/Continuities/depth-server.git`
-6. `cd depth-server`
-7. `sudo apt-get install python make build-essential libudev-dev`
-8. Annoying things to make node-kinect build:
+2. Gotta run as root to access USB: `sudo su -`
+3. Install nvm: `curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.34.0/install.sh | bash`
+4. `nvm install 0.10.24`
+5. `npm config set strict-ssl false`
+6. `git clone https://github.com/Continuities/depth-server.git`
+7. `cd depth-server`
+8. `sudo apt-get install python make build-essential libudev-dev`
+9. Annoying things to make node-kinect build:
     a. `sudo mkdir /usr/include/libfreenect && sudo cp /usr/include/libfreenect.h /usr/include/libfreenect`
     b. Change `libfreenect.a` in `node-kinect/binding.gyp` to `/usr/lib/x86_64-linux-gnu/libfreenect.so`
-9. `npm install`
-10. Get fwfetcher from `https://raw.githubusercontent.com/OpenKinect/libfreenect/master/src/fwfetcher.py` and run it
-11. Run `freenect-micview` to upload the firmware
-12. `npm run server` to test
-13. Install old PM2 `npm install pm2@1 -g`
-14. `pm2 start run.sh --name lightmirror`
-15. So it starts on reboot: `pm2 save` then `pm2 startup`
+10. `npm install`
+11. Get fwfetcher from `https://raw.githubusercontent.com/OpenKinect/libfreenect/master/src/fwfetcher.py` and run it
+12. Run `freenect-micview` to upload the firmware
+13. `npm run server` to test
+14. Install old PM2 `npm install pm2@1 -g`
+15. `pm2 start run.sh --name lightmirror`
+16. So it starts on reboot: `pm2 save` then `pm2 startup`
