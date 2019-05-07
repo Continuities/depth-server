@@ -28,6 +28,9 @@ export default class {
     LOGGER('info', 'Resetting USB device...');
     dev.reset((err) => {
       const di = dev.interface(1);
+      if (di.isKernelDriverActive()) {
+        di.detachKernelDriver();
+      }
       di.claim();
 
       this[$transfer] = data => 
